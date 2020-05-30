@@ -1,9 +1,9 @@
+import os
+
 import pyperclip
 import validators
 import youtube_dl
-import time
-import os
-import shutil
+
 
 def press_to_continue():
     input("\n\nPress Enter to Exit...\n")
