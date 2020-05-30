@@ -2,11 +2,17 @@ import pyperclip
 import validators
 import youtube_dl
 import time
-
+import os
+import shutil
 
 def press_to_continue():
     input("\n\nPress Enter to Exit...\n")
 
+def current_dir():
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    user_path = os.environ['USERPROFILE']
+    desktop_user_path = user_path + "\\Desktop"
+    return str(desktop_user_path)
 
 def clipboard_validate_url():
     clipboard = pyperclip.paste()
@@ -26,7 +32,7 @@ def clipboard_validate_url():
 
 def ydl_download(link):
     ydl_opts = {
-        'outtmpl': 'C:/Users/workp/Desktop/%(title)s -- %(uploader)s.%(ext)s',
+        'outtmpl': current_dir() + '\\%(title)s -- %(uploader)s.%(ext)s',
         'noplaylist': True,
     }
 
