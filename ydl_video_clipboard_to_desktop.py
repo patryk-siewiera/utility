@@ -34,6 +34,7 @@ def ydl_download(link):
     ydl_opts = {
         'outtmpl': current_dir() + '\\%(title)s -- %(uploader)s.%(ext)s',
         'noplaylist': True,
+        'ignoreerrors': True
     }
 
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
