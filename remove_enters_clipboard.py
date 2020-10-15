@@ -1,16 +1,14 @@
-import pyautogui
+# import pyautogui
 import pyperclip
 
-clp = pyperclip.paste()
-clp = str(clp)
 
-print("\t\t***\t\tclipboard before\n\n", clp, "\n\n")
+def remove_special_chars():
+    clp = pyperclip.paste()
+    clp = str(clp)
+    clp = clp.splitlines()
+    clp = " ".join(clp)
+    clp = clp.replace('Ŝ', 'z')
+    pyperclip.copy(clp)
 
-clp = clp.splitlines()
-clp = " ".join(clp)
-clp = clp.replace('Ŝ','z')
 
-print("\t\t###\t\tclipboard AFTER\n\n", clp, "\n\n")
-
-pyperclip.copy(clp)
-
+remove_special_chars()
