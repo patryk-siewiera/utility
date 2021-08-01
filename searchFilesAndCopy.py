@@ -1,77 +1,94 @@
-import os
 import shutil
+from openpyxl import load_workbook
+import os
+import glob
+from datetime import datetime
 
 
 def app():
-    # EDIT ME
-    origin = r"C:\Users\sievr\Downloads\KKCE\wnioski materiałowe\CE"  # where to search
-    newFolderName = "webopt_kopia3"
-    keyWord = ["ce"]
-    destination = r"C:\Users\sievr\Downloads\KKCE\solution\here_paste_solutions\\" + newFolderName  # where copy results
+    searchSubfolders = "\**"
+    nowTime = datetime.now()
+    nowTime = nowTime.strftime("%Y-%m-%d__%H-%M-%S")
+    nowTime = str(nowTime)
+
+    # *********** EDIT ME
+    origin = r"C:\Users\sievr\Downloads\KKCE\wnioski materiałowe" + searchSubfolders  # where to search, end with \*
+    newFolderName = "1.2"
+    keyWords = ["1.2"]
+    xlsName = "excelData.xlsx"
+    excelMaxColumn = 3
+    excelMaxRow = 5
+    destinationPath = r"C:\Users\sievr\Downloads\KKCE\solution\here_paste_solutions"
 
     # --------------------------------
-    readAndPrintInitValues(origin, newFolderName, destination, keyWord)
+    destination = os.path.join(destinationPath, nowTime, newFolderName)
+
+    readAndPrintInitValues(origin, newFolderName, destination, keyWords, xlsName, excelMaxColumn, excelMaxRow)
+    readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow)
     createFolderIfNotExist(destination)
-    copyAllFiles(origin, destination, keyWord)
+    copyAllFiles(origin, destination, keyWords)
 
 
-def readAndPrintInitValues(origin, newFolderName, destination, keyWord):
+def readAndPrintInitValues(origin, newFolderName, destination, keyWords, xlsName, excelMaxColumn, excelMaxRow):
     print("\n*** YOUR VALUES ***")
+    print(
+        "*** Excel filename\n\t" + xlsName + " \t\t[MAX_columns: " + str(excelMaxColumn) + ", MAX_rows: " + str(
+            excelMaxRow) + "]")
     print("*** source folder\n\t" + origin)
     print("*** destination\n\t" + destination)
     print("*** New folder name\n\t" + newFolderName)
-    print("*** Search by this Keywords")
-    for key in keyWord:
+    print("*** Search by this keyWordss")
+    for key in keyWords:
         print("\t - " + key)
     print("\n")
 
 
+def readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow):
+    wb = load_workbook(xlsName)
+    sheet = wb.active
+    rows_iter = sheet.iter_rows(max_col=excelMaxColumn, max_row=excelMaxRow)
+    allValuesFromXLS = [[cell.value for cell in list(row)] for row in rows_iter]
+    return print(allValuesFromXLS)
+
+
 def createFolderIfNotExist(pathToNewFolder):
-    try:
-        os.stat(pathToNewFolder)
+    if not os.path.exists(pathToNewFolder):
+        os.makedirs(pathToNewFolder)
+        print("\n++ Folders created! \n\t", pathToNewFolder, "\n")
+    else:
         print("\n-- Folder already exist,  \n\t", pathToNewFolder, "\n")
-    except:
-        os.mkdir(pathToNewFolder)
-        print("\n++ Folder created! \n\t", pathToNewFolder, "\n")
 
 
-def filterArray(array, keyWord):
-    # array and keywords will be reduced to lowercase
+def filterArray(array, keyWords, path):
+    # array and keyWordss will be reduced to lowercase
     array = [each_string.lower() for each_string in array]
-    keyWord = [each_keyword.lower() for each_keyword in keyWord]
-    for key in keyWord:
+    keyWords = [each_keyWords.lower() for each_keyWords in keyWords]
+    for key in keyWords:
         array = [item for item in array if key in item]
-    return array
+    if len(array) == 0 or not os.path.isfile(path):
+        return False
+    else:
+        return True
 
 
-def copyAllFiles(origin, destination, keyWord):
-    arrayAllFiles = (os.listdir(origin))
-    arrayAllFiles = filterArray(arrayAllFiles, keyWord)
-
-    if len(arrayAllFiles) == 0:
-        return print("-- Files not found: \n\tempty list")
+def copyAllFiles(origin, destination, keyWords):
+    listOfAllFilesFullPath = []
+    listAllPath = []
     print("++ Files found: \t")
-    for fileName in arrayAllFiles:
-        print("\t" + fileName)
-        fullFileName = os.path.join(origin, fileName)
-        if os.walk(fullFileName):
-            shutil.copy(fullFileName, destination)
-    print("\n++ Files copied successfully ")
+    for f in glob.glob(origin, recursive=True):
+        if (filterArray([os.path.basename(f)], keyWords, f)):
+            listOfAllFilesFullPath.append(f)
+            print("\t" + os.path.basename(f))
+    if (len(listOfAllFilesFullPath) == 0):
+        print("\t-- !! -- \t List is empty")
+
+    try:
+        for fileName in listOfAllFilesFullPath:
+            if os.walk(fileName):
+                shutil.copy(fileName, destination)
+        print("\n++ Files copied successfully ")
+    except:
+        print("\n--!!!--\t Fail during copying files")
 
 
-# app()
-
-from openpyxl import load_workbook
-import os
-import glob
-
-#uzupełnianie excela
-wb = load_workbook('excelData.xlsx')
-sheet = wb.active
-
-lastRow = sheet.max_row
-for row in sheet.iter_rows(min_row=1, min_col=1, max_row=lastRow, max_col=3):
-    # print(row)
-    for cell in row:
-        el = cell.value
-        print(el)
+app()
