@@ -16,6 +16,7 @@ def app():
     xlsName = r"C:\Users\sievr\Downloads\KKCE\solution\excelData.xlsx"
     excelMaxColumn__Y = 4
     excelMaxRow__X = 8
+    preserveOriginalFilename = False
 
     # --------------------------------
     searchSubfolders = "\**"
@@ -24,15 +25,15 @@ def app():
 
     readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn__Y, excelMaxRow__X)
     xls = readXlsAndReturnValues(xlsName, excelMaxColumn__Y, excelMaxRow__X)
-    manipulateXls(xls, destination, origin)
+    manipulateXls(xls, destination, origin, preserveOriginalFilename)
 
 
-def manipulateXls(xls, destination, origin):
+def manipulateXls(xls, destination, origin, preserveOriginalFilename):
     for item in xls:
         folderName = item[0]
         keywordsTemp = item[1:]
         destinationTemp = (os.path.join(destination, folderName))
-        copyAllFiles(origin, destinationTemp, keywordsTemp, folderName)
+        copyAllFiles(origin, destinationTemp, keywordsTemp, folderName, preserveOriginalFilename)
 
 
 def nowCurrentTime():
@@ -78,7 +79,7 @@ def filterArray(array, keyWords, path):
         return True
 
 
-def copyAllFiles(origin, destination, keyWords, folderName):
+def copyAllFiles(origin, destination, keyWords, folderName, preserveOriginalFilename):
     listOfAllFilesFullPath = []
     keyWords = [x for x in keyWords if x is not None]
     print("\n------ FOLDER NAME:\t", folderName)
@@ -97,14 +98,27 @@ def copyAllFiles(origin, destination, keyWords, folderName):
         id = 0
         for fileName in listOfAllFilesFullPath:
             if os.walk(fileName):
+                print(os.path.basename(fileName))
                 shutil.copy(fileName, destination)
                 fileTempPath = (os.path.join(destination, os.path.basename(fileName)))
                 keyWordBuilder = "_".join(keyWords)
                 extension = (os.path.splitext(fileName)[1])
-                if (id == 0):
-                    os.rename(fileTempPath, destination + "/" + keyWordBuilder + extension)
+                if not (preserveOriginalFilename):
+                    if (id == 0):
+                        os.rename(fileTempPath, destination + "/" + keyWordBuilder + extension)
+                    else:
+                        os.rename(fileTempPath, destination + "/" + keyWordBuilder + "__(" + str(id) + ")" + extension)
                 else:
-                    os.rename(fileTempPath, destination + "/" + keyWordBuilder + "__(" + str(id) + ")" + extension)
+                    if (id == 0):
+                        os.rename(fileTempPath,
+                                  destination + "/" + str(os.path.basename(
+                                      fileName))
+                                  + "___" + keyWordBuilder + "_____" + extension)
+                    else:
+                        os.rename(fileTempPath,
+                                  destination + "/" + str(os.path.basename(
+                                      fileName))
+                                  + "_____" + keyWordBuilder + "__(" + str(id) + ")" + extension)
 
                 id = id + 1
         print("++ Files copied successfully \n\n\n")
