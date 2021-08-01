@@ -14,8 +14,8 @@ def app():
     searchFolder = r"C:\Users\sievr\Downloads\KKCE\wnioski materiałowe"
     destinationPath = r"C:\Users\sievr\Downloads\KKCE\solution\here_paste_solutions"
     xlsName = r"C:\Users\sievr\Downloads\KKCE\solution\excelData.xlsx"
-    excelMaxColumn__Y = 4
-    excelMaxRow__X = 8
+    excelMaxColumn__Y = 3
+    excelMaxRow__X = 6
     preserveOriginalFilename = False
 
     # --------------------------------
@@ -31,9 +31,12 @@ def app():
 def manipulateXls(xls, destination, origin, preserveOriginalFilename):
     for item in xls:
         folderName = item[0]
-        keywordsTemp = item[1:]
-        destinationTemp = (os.path.join(destination, folderName))
-        copyAllFiles(origin, destinationTemp, keywordsTemp, folderName, preserveOriginalFilename)
+        if folderName != None:
+            keywordsTemp = item[1:]
+            destinationTemp = (os.path.join(destination, folderName))
+            copyAllFiles(origin, destinationTemp, keywordsTemp, folderName, preserveOriginalFilename)
+        else:
+            print("!!--!!--!!\t Empty row in: Folder Name\n\n")
 
 
 def nowCurrentTime():
@@ -48,7 +51,7 @@ def readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn, excelMa
         "*** Excel filename\n\t" + xlsName + " \t\t[MAX_columns: " + str(excelMaxColumn) + ", MAX_rows: " + str(
             excelMaxRow) + "]")
     print("*** source folder\n\t" + origin)
-    print("*** destination\n\t" + destination)
+    print("*** destination\n\t" + destination + "\n\n")
 
 
 def readXlsAndReturnValues(xlsName, excelMaxColumn, excelMaxRow):
@@ -85,6 +88,7 @@ def copyAllFiles(origin, destination, keyWords, folderName, preserveOriginalFile
     print("\n------ FOLDER NAME:\t", folderName)
     print("------ KEYWORDS:\t", keyWords)
     print("\n++ Files found: \t")
+
     for f in glob.glob(origin, recursive=True):
         if (filterArray([os.path.basename(f)], keyWords, f)):
             listOfAllFilesFullPath.append(f)
@@ -96,9 +100,9 @@ def copyAllFiles(origin, destination, keyWords, folderName, preserveOriginalFile
     try:
         createFolderIfNotExist(destination)
         id = 0
+        # copy and rename
         for fileName in listOfAllFilesFullPath:
             if os.walk(fileName):
-                print(os.path.basename(fileName))
                 shutil.copy(fileName, destination)
                 fileTempPath = (os.path.join(destination, os.path.basename(fileName)))
                 keyWordBuilder = "_".join(keyWords)
