@@ -14,8 +14,6 @@ def app():
     searchFolder = r"C:\Users\sievr\Downloads\KKCE\wnioski materiałowe"
     destinationPath = r"C:\Users\sievr\Downloads\KKCE\solution\here_paste_solutions"
     xlsName = r"C:\Users\sievr\Downloads\KKCE\solution\excelData.xlsx"
-    excelMaxColumn__Y = 3
-    excelMaxRow__X = 6
     preserveOriginalFilename = False
 
     # --------------------------------
@@ -23,8 +21,8 @@ def app():
     origin = searchFolder + searchSubfolders
     destination = os.path.join(destinationPath, nowCurrentTime())
 
-    readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn__Y, excelMaxRow__X)
-    xls = readXlsAndReturnValues(xlsName, excelMaxColumn__Y, excelMaxRow__X)
+    readAndPrintInitValues(origin, destination, xlsName)
+    xls = readXlsAndReturnValues(xlsName)
     manipulateXls(xls, destination, origin, preserveOriginalFilename)
 
 
@@ -36,7 +34,7 @@ def manipulateXls(xls, destination, origin, preserveOriginalFilename):
             destinationTemp = (os.path.join(destination, folderName))
             copyAllFiles(origin, destinationTemp, keywordsTemp, folderName, preserveOriginalFilename)
         else:
-            print("!!--!!--!!\t Empty row in: Folder Name\n\n")
+            print("\n\n\n!!--!!--!!\t\t Empty row A: Folder Name\n\n")
 
 
 def nowCurrentTime():
@@ -45,19 +43,18 @@ def nowCurrentTime():
     return str(nowTime)
 
 
-def readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn, excelMaxRow):
+def readAndPrintInitValues(origin, destination, xlsName):
     print("\n*** YOUR VALUES ***")
     print(
-        "*** Excel filename\n\t" + xlsName + " \t\t[MAX_columns: " + str(excelMaxColumn) + ", MAX_rows: " + str(
-            excelMaxRow) + "]")
+        "*** Excel filename\n\t" + xlsName )
     print("*** source folder\n\t" + origin)
     print("*** destination\n\t" + destination + "\n\n")
 
 
-def readXlsAndReturnValues(xlsName, excelMaxColumn, excelMaxRow):
+def readXlsAndReturnValues(xlsName):
     wb = load_workbook(xlsName)
     sheet = wb.active
-    rows_iter = sheet.iter_rows(max_col=excelMaxColumn, max_row=excelMaxRow)
+    rows_iter = sheet.iter_rows(max_col=sheet.max_column, max_row=sheet.max_row)
     allValuesFromXLS = [[cell.value for cell in list(row)] for row in rows_iter]
     return allValuesFromXLS
 
@@ -87,6 +84,8 @@ def copyAllFiles(origin, destination, keyWords, folderName, preserveOriginalFile
     keyWords = [x for x in keyWords if x is not None]
     print("\n------ FOLDER NAME:\t", folderName)
     print("------ KEYWORDS:\t", keyWords)
+    if not keyWords:
+        return print("!!--!!--!! \t\t\t Keywords not found ")
     print("\n++ Files found: \t")
 
     for f in glob.glob(origin, recursive=True):
@@ -94,7 +93,7 @@ def copyAllFiles(origin, destination, keyWords, folderName, preserveOriginalFile
             listOfAllFilesFullPath.append(f)
             print("\t" + os.path.basename(f))
     if (len(listOfAllFilesFullPath) == 0):
-        print("\t-- !! -- \t List is empty\n\n\n")
+        print("\t-- !! -- \t Nothing -> List is empty\n\n\n")
         return False
 
     try:
@@ -117,12 +116,12 @@ def copyAllFiles(origin, destination, keyWords, folderName, preserveOriginalFile
                         os.rename(fileTempPath,
                                   destination + "/" + str(os.path.basename(
                                       fileName))
-                                  + "___" + keyWordBuilder + "_____" + extension)
+                                  + "___#" + keyWordBuilder + "#___" + extension)
                     else:
                         os.rename(fileTempPath,
                                   destination + "/" + str(os.path.basename(
                                       fileName))
-                                  + "_____" + keyWordBuilder + "__(" + str(id) + ")" + extension)
+                                  + "___#" + keyWordBuilder + "#__(" + str(id) + ")" + extension)
 
                 id = id + 1
         print("++ Files copied successfully \n\n\n")
