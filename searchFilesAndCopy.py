@@ -6,27 +6,37 @@ from datetime import datetime
 
 
 def app():
-    searchSubfolders = "\**"
-    nowTime = datetime.now()
-    nowTime = nowTime.strftime("%Y-%m-%d__%H-%M-%S")
-    nowTime = str(nowTime)
-
     # *********** EDIT ME
-    origin = r"C:\Users\sievr\Downloads\KKCE\wnioski materiałowe" + searchSubfolders  # where to search, end with \*
+    searchFolder = r"C:\Users\sievr\Downloads\KKCE\wnioski materiałowe"
     newFolderName = "1.2"
-    keyWords = ["1.2"]
+    keyWords = ["kk"]
     xlsName = "excelData.xlsx"
     excelMaxColumn = 3
     excelMaxRow = 5
     destinationPath = r"C:\Users\sievr\Downloads\KKCE\solution\here_paste_solutions"
 
     # --------------------------------
-    destination = os.path.join(destinationPath, nowTime, newFolderName)
+    searchSubfolders = "\**"
+    origin = searchFolder + searchSubfolders
+    destination = os.path.join(destinationPath, nowCurrentTime())
 
     readAndPrintInitValues(origin, newFolderName, destination, keyWords, xlsName, excelMaxColumn, excelMaxRow)
-    readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow)
-    createFolderIfNotExist(destination)
-    copyAllFiles(origin, destination, keyWords)
+    xls = readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow)
+    manipulateXls(xls, destination, origin)
+
+
+def manipulateXls(xls, destination, origin):
+    for item in xls:
+        folderName = item[0]
+        keywordsTemp = item[1:]
+        destinationTemp = (os.path.join(destination, folderName))
+        copyAllFiles(origin, destinationTemp, keywordsTemp)
+
+
+def nowCurrentTime():
+    nowTime = datetime.now()
+    nowTime = nowTime.strftime("%Y-%m-%d__%H-%M-%S")
+    return str(nowTime)
 
 
 def readAndPrintInitValues(origin, newFolderName, destination, keyWords, xlsName, excelMaxColumn, excelMaxRow):
@@ -37,7 +47,7 @@ def readAndPrintInitValues(origin, newFolderName, destination, keyWords, xlsName
     print("*** source folder\n\t" + origin)
     print("*** destination\n\t" + destination)
     print("*** New folder name\n\t" + newFolderName)
-    print("*** Search by this keyWordss")
+    print("*** Search by this keyWords")
     for key in keyWords:
         print("\t - " + key)
     print("\n")
@@ -48,7 +58,7 @@ def readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow):
     sheet = wb.active
     rows_iter = sheet.iter_rows(max_col=excelMaxColumn, max_row=excelMaxRow)
     allValuesFromXLS = [[cell.value for cell in list(row)] for row in rows_iter]
-    return print(allValuesFromXLS)
+    return allValuesFromXLS
 
 
 def createFolderIfNotExist(pathToNewFolder):
@@ -73,20 +83,22 @@ def filterArray(array, keyWords, path):
 
 def copyAllFiles(origin, destination, keyWords):
     listOfAllFilesFullPath = []
-    listAllPath = []
+    print("------ KEYWORDS", keyWords)
     print("++ Files found: \t")
     for f in glob.glob(origin, recursive=True):
         if (filterArray([os.path.basename(f)], keyWords, f)):
             listOfAllFilesFullPath.append(f)
             print("\t" + os.path.basename(f))
     if (len(listOfAllFilesFullPath) == 0):
-        print("\t-- !! -- \t List is empty")
+        print("\t-- !! -- \t List is empty\n\n\n")
+        return False
 
     try:
+        createFolderIfNotExist(destination)
         for fileName in listOfAllFilesFullPath:
             if os.walk(fileName):
                 shutil.copy(fileName, destination)
-        print("\n++ Files copied successfully ")
+        print("++ Files copied successfully \n\n\n")
     except:
         print("\n--!!!--\t Fail during copying files")
 
