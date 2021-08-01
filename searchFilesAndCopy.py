@@ -5,21 +5,25 @@ import glob
 from datetime import datetime
 
 
+# if app don't work
+# pip install openpyxl
+
+
 def app():
     # *********** EDIT ME
     searchFolder = r"C:\Users\sievr\Downloads\KKCE\wnioski materiałowe"
-    xlsName = r"C:\Users\sievr\Downloads\KKCE\solution\excelData.xlsx"
-    excelMaxColumn = 4
-    excelMaxRow = 5
     destinationPath = r"C:\Users\sievr\Downloads\KKCE\solution\here_paste_solutions"
+    xlsName = r"C:\Users\sievr\Downloads\KKCE\solution\excelData.xlsx"
+    excelMaxColumn__Y = 4
+    excelMaxRow__X = 8
 
     # --------------------------------
     searchSubfolders = "\**"
     origin = searchFolder + searchSubfolders
     destination = os.path.join(destinationPath, nowCurrentTime())
 
-    readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn, excelMaxRow)
-    xls = readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow)
+    readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn__Y, excelMaxRow__X)
+    xls = readXlsAndReturnValues(xlsName, excelMaxColumn__Y, excelMaxRow__X)
     manipulateXls(xls, destination, origin)
 
 
@@ -28,7 +32,7 @@ def manipulateXls(xls, destination, origin):
         folderName = item[0]
         keywordsTemp = item[1:]
         destinationTemp = (os.path.join(destination, folderName))
-        copyAllFiles(origin, destinationTemp, keywordsTemp)
+        copyAllFiles(origin, destinationTemp, keywordsTemp, folderName)
 
 
 def nowCurrentTime():
@@ -46,7 +50,7 @@ def readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn, excelMa
     print("*** destination\n\t" + destination)
 
 
-def readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow):
+def readXlsAndReturnValues(xlsName, excelMaxColumn, excelMaxRow):
     wb = load_workbook(xlsName)
     sheet = wb.active
     rows_iter = sheet.iter_rows(max_col=excelMaxColumn, max_row=excelMaxRow)
@@ -63,7 +67,7 @@ def createFolderIfNotExist(pathToNewFolder):
 
 
 def filterArray(array, keyWords, path):
-    # array and keyWordss will be reduced to lowercase
+    # array and keyWords will be reduced to lowercase
     array = [each_string.lower() for each_string in array]
     keyWords = [each_keyWords.lower() for each_keyWords in keyWords]
     for key in keyWords:
@@ -74,11 +78,12 @@ def filterArray(array, keyWords, path):
         return True
 
 
-def copyAllFiles(origin, destination, keyWords):
+def copyAllFiles(origin, destination, keyWords, folderName):
     listOfAllFilesFullPath = []
     keyWords = [x for x in keyWords if x is not None]
-    print("\n------ KEYWORDS", keyWords)
-    print("++ Files found: \t")
+    print("\n------ FOLDER NAME:\t", folderName)
+    print("------ KEYWORDS:\t", keyWords)
+    print("\n++ Files found: \t")
     for f in glob.glob(origin, recursive=True):
         if (filterArray([os.path.basename(f)], keyWords, f)):
             listOfAllFilesFullPath.append(f)
@@ -94,7 +99,6 @@ def copyAllFiles(origin, destination, keyWords):
             if os.walk(fileName):
                 shutil.copy(fileName, destination)
                 fileTempPath = (os.path.join(destination, os.path.basename(fileName)))
-                print(fileName)
                 keyWordBuilder = "_".join(keyWords)
                 extension = (os.path.splitext(fileName)[1])
                 if (id == 0):
