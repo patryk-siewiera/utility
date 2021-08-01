@@ -8,10 +8,8 @@ from datetime import datetime
 def app():
     # *********** EDIT ME
     searchFolder = r"C:\Users\sievr\Downloads\KKCE\wnioski materiałowe"
-    newFolderName = "1.2"
-    keyWords = ["kk"]
-    xlsName = "excelData.xlsx"
-    excelMaxColumn = 3
+    xlsName = r"C:\Users\sievr\Downloads\KKCE\solution\excelData.xlsx"
+    excelMaxColumn = 4
     excelMaxRow = 5
     destinationPath = r"C:\Users\sievr\Downloads\KKCE\solution\here_paste_solutions"
 
@@ -20,7 +18,7 @@ def app():
     origin = searchFolder + searchSubfolders
     destination = os.path.join(destinationPath, nowCurrentTime())
 
-    readAndPrintInitValues(origin, newFolderName, destination, keyWords, xlsName, excelMaxColumn, excelMaxRow)
+    readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn, excelMaxRow)
     xls = readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow)
     manipulateXls(xls, destination, origin)
 
@@ -39,18 +37,13 @@ def nowCurrentTime():
     return str(nowTime)
 
 
-def readAndPrintInitValues(origin, newFolderName, destination, keyWords, xlsName, excelMaxColumn, excelMaxRow):
+def readAndPrintInitValues(origin, destination, xlsName, excelMaxColumn, excelMaxRow):
     print("\n*** YOUR VALUES ***")
     print(
         "*** Excel filename\n\t" + xlsName + " \t\t[MAX_columns: " + str(excelMaxColumn) + ", MAX_rows: " + str(
             excelMaxRow) + "]")
     print("*** source folder\n\t" + origin)
     print("*** destination\n\t" + destination)
-    print("*** New folder name\n\t" + newFolderName)
-    print("*** Search by this keyWords")
-    for key in keyWords:
-        print("\t - " + key)
-    print("\n")
 
 
 def readXLSandReturnListOfElements(xlsName, excelMaxColumn, excelMaxRow):
@@ -83,7 +76,8 @@ def filterArray(array, keyWords, path):
 
 def copyAllFiles(origin, destination, keyWords):
     listOfAllFilesFullPath = []
-    print("------ KEYWORDS", keyWords)
+    keyWords = [x for x in keyWords if x is not None]
+    print("\n------ KEYWORDS", keyWords)
     print("++ Files found: \t")
     for f in glob.glob(origin, recursive=True):
         if (filterArray([os.path.basename(f)], keyWords, f)):
@@ -95,10 +89,22 @@ def copyAllFiles(origin, destination, keyWords):
 
     try:
         createFolderIfNotExist(destination)
+        id = 0
         for fileName in listOfAllFilesFullPath:
             if os.walk(fileName):
                 shutil.copy(fileName, destination)
+                fileTempPath = (os.path.join(destination, os.path.basename(fileName)))
+                print(fileName)
+                keyWordBuilder = "_".join(keyWords)
+                extension = (os.path.splitext(fileName)[1])
+                if (id == 0):
+                    os.rename(fileTempPath, destination + "/" + keyWordBuilder + extension)
+                else:
+                    os.rename(fileTempPath, destination + "/" + keyWordBuilder + "__(" + str(id) + ")" + extension)
+
+                id = id + 1
         print("++ Files copied successfully \n\n\n")
+        id = 0
     except:
         print("\n--!!!--\t Fail during copying files")
 
